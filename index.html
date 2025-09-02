@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>紅茶占卜</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background: linear-gradient(135deg, #f0f9ff 0%, #cbebff 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+        }
+        .container {
+            max-width: 600px;
+            width: 100%;
+            background-color: white;
+            padding: 2rem;
+            border-radius: 1.5rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            border: 2px solid #a0c4ff;
+        }
+        .title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #3b82f6;
+            margin-bottom: 1rem;
+        }
+        .subtitle {
+            font-size: 1.25rem;
+            color: #6b7280;
+            margin-bottom: 2rem;
+        }
+        .result-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+        .card {
+            background-color: #f1f5f9;
+            padding: 1.5rem;
+            border-radius: 1rem;
+            border: 1px solid #e2e8f0;
+            text-align: left;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 0.5rem;
+        }
+        .card-description {
+            font-size: 1rem;
+            color: #4b5563;
+        }
+        .button {
+            background-color: #3b82f6;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 9999px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.1s;
+            border: none;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .button:hover {
+            background-color: #2563eb;
+        }
+        .button:active {
+            transform: translateY(1px);
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex flex-col justify-center items-center h-screen">
+    <div class="container">
+        <h1 class="title">紅茶占卜</h1>
+        <p class="subtitle">點擊按鈕，抽出你本週的運勢</p>
+        
+        <button id="drawButton" class="button">每週運勢</button>
+        
+        <div id="result" class="result-container"></div>
+    </div>
+
+    <script>
+        const oracleObjects = [
+            { name: "蘋果", description: "誘惑會考驗你，但選擇健康會帶來甜美的果實。" },
+            { name: "鑰匙", description: "掌握了解決問題的關鍵，新的機會即將開啟。" },
+            { name: "時鐘", description: "是時候抓住機會，不要再拖延，時間正在流逝。" },
+            { name: "鏡子", description: "你的真實面貌即將顯現，誠實面對自己是成長的開始。" },
+            { name: "書本", description: "學習新知識或技能會為你帶來意想不到的收穫。" },
+            { name: "蠟燭", description: "你的內心充滿了希望與溫暖，能照亮自己與他人的路。" },
+            { name: "斧頭", description: "對你不利的力量正在逼近，需要果斷地斬斷阻礙。" },
+            { name: "螞蟻", description: "工作、成就與成功需要你付出辛勤的努力。" },
+            { name: "羽毛", description: "輕柔的改變正在發生，跟隨直覺會讓你輕鬆前行。" },
+            { name: "石頭", description: "堅定你的信念，你所付出的努力將會穩固地紮根。" },
+            { name: "茶杯", description: "靜下心來，享受寧靜與和諧，簡單的快樂就在身邊。" },
+            { name: "雨傘", description: "準備好迎接風雨，保護自己免受不必要的麻煩。" },
+            { name: "月亮", description: "你的直覺和情感力量正在增強，相信你的第六感。" },
+            { name: "太陽", description: "你的運勢將迎來光明與溫暖，充滿活力與希望。" },
+            { name: "星星", description: "遠方的夢想並非遙不可及，保持信念，繼續前進。" },
+            { name: "橋", description: "過去的障礙即將被克服，人際關係也會更加順利。" },
+            { name: "樹葉", description: "新的生命與成長正在萌芽，是時候放下舊有的包袱。" },
+            { name: "花朵", description: "你的魅力與美麗將會盛開，為你帶來人緣與喜悅。" },
+            { name: "剪刀", description: "需要做出決定或割捨，這會帶來新的自由。" },
+            { name: "水滴", description: "小小的努力也能積累成大大的成就，不要輕視微小的進步。" },
+            { name: "火柴", description: "你的熱情將被點燃，是時候追隨內心的渴望。" },
+            { name: "稻穗", description: "過去的努力即將豐收，享受勞動帶來的果實。" },
+            { name: "指南針", description: "你的方向感清晰，知道自己該往哪裡去。" },
+            { name: "貝殼", description: "聆聽內心的聲音，你會從中找到珍貴的寶藏。" },
+            { name: "風箏", description: "你的思緒飛得很高，但別忘了腳踏實地。" },
+            { name: "繩子", description: "考驗你的耐心與韌性，這段關係或挑戰需要你的堅持。" },
+            { name: "氣球", description: "你的希望與夢想正在上升，但要注意別被現實戳破。" },
+            { name: "鎖", description: "有些事情需要時間去解開，不要急於一時。" },
+            { name: "梯子", description: "你正在穩步上升，朝著目標邁進。" },
+            { name: "瓶子", description: "你的情緒可能被壓抑，是時候將其釋放出來。" }
+        ];
+
+        document.getElementById('drawButton').addEventListener('click', function() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = ''; // 清空舊的結果
+
+            const shuffled = [...oracleObjects].sort(() => 0.5 - Math.random());
+            const selectedObjects = shuffled.slice(0, 3);
+
+            selectedObjects.forEach(obj => {
+                const cardDiv = document.createElement('div');
+                cardDiv.className = 'card';
+                cardDiv.innerHTML = `
+                    <div class="card-title">${obj.name}</div>
+                    <div class="card-description">${obj.description}</div>
+                `;
+                resultDiv.appendChild(cardDiv);
+            });
+        });
+    </script>
+</body>
+</html>
