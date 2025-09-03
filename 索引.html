@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>伍茶時光占卜</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* 引入中文字體 */
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700&family=Inter:wght@300;400;500;700&display=swap');
+        
+        body, html {
+            font-family: 'Inter', sans-serif;
+            letter-spacing: 0.5px;
+            background-color: #f7f3f1;
+            height: 100%;
+        }
+
+        /* 主容器樣式 */
+        .main-container {
+            background-color: #FFFFFF;
+            border: 4px solid #f0e9e6;
+        }
+
+        /* 卡片容器樣式 */
+        .card-container {
+            width: 160px;
+            height: 224px;
+            cursor: pointer;
+            perspective: 1000px;
+            transform-style: preserve-3d;
+            position: relative;
+        }
+        
+        /* 卡片內部翻轉動畫 */
+        .card-inner {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        /* 懸停效果 */
+        .card-container:hover .card-inner {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px -5px rgba(0, 0, 0, 0.15);
+        }
+
+        /* 翻開卡片效果 */
+        .card-container.revealed .card-inner {
+            transform: rotateY(180deg);
+        }
+
+        /* 卡片正面與背面樣式 */
+        .card-front, .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            padding: 1rem;
+        }
+
+        .card-back {
+            background: linear-gradient(45deg, #8B5CF6, #EC4899);
+        }
+
+        .card-front {
+            background-color: #ffffff;
+            transform: rotateY(180deg);
+            padding: 2rem 1.5rem;
+            text-align: center;
+            border: 2px solid #f0e9e6;
+            box-shadow: 0 4px 10px -2px rgba(0,0,0,0.1);
+        }
+        
+        /* 媒體查詢，適用於小螢幕 */
+        @media (min-width: 640px) {
+            .card-container {
+                width: 192px;
+                height: 256px;
+            }
+        }
+        
+        /* 按鈕樣式 */
+        .btn {
+            background: linear-gradient(45deg, #8B5CF6, #EC4899);
+            color: white;
+            padding: 1rem 3rem;
+            font-size: 1.125rem;
+            font-weight: 700;
+            border-radius: 9999px;
+            box-shadow: 0 10px 20px -5px rgba(139, 92, 246, 0.4);
+            transition: all 0.3s ease;
+            transform: translateY(0);
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px -5px rgba(139, 92, 246, 0.6);
+        }
+
+        .btn:active {
+            transform: translateY(1px);
+        }
+
+        .text-shadow {
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.05);
+        }
+    </style>
+</head>
+<body class="text-gray-800 flex flex-col items-center justify-center min-h-screen p-6 overflow-hidden relative">
+
+    <!-- 幾何圖形背景 -->
+    <div id="geometric-shapes" class="absolute inset-0 z-0">
+        <div class="geometric-shape shape-1 absolute opacity-15 blur-[80px] rounded-full w-[300px] h-[300px] top-[10%] left-[5%] bg-[#8B5CF6]"></div>
+        <div class="geometric-shape shape-2 hidden md:block absolute opacity-15 blur-[80px] rounded-full w-[400px] h-[400px] bottom-[5%] right-[15%] bg-[#EC4899] rotate-45"></div>
+        <div class="geometric-shape shape-3 absolute opacity-15 blur-[80px] rounded-full w-[250px] h-[250px] top-[40%] right-[-10%] bg-[#8B5CF6]"></div>
+    </div>
+
+    <!-- 主容器 -->
+    <div id="main-content" class="main-container rounded-3xl shadow-2xl p-8 max-w-5xl w-full mx-auto my-8 transform transition-all duration-500 ease-in-out relative z-10">
+        
+        <!-- 首頁內容 -->
+        <div id="intro-section" class="flex flex-col items-center">
+            <h1 class="font-serif text-5xl sm:text-6xl font-bold text-center text-gray-800 mb-4 tracking-wide font-serif text-shadow" style="font-family: 'Noto Serif TC', serif;">伍茶時光占卜</h1>
+            <p class="text-xl sm:text-2xl font-bold text-gray-500 text-center mb-16 text-shadow">抽出您未來一周的心靈能量卡</p>
+            <button id="drawButton" class="btn">
+                開始抽卡
+            </button>
+        </div>
+
+        <!-- 抽卡頁面內容 (預設隱藏) -->
+        <div id="draw-section" class="flex flex-col items-center hidden">
+            <h2 class="text-3xl font-bold text-gray-700 font-semibold mb-8 text-shadow">您的占卜結果</h2>
+            <div id="card-selection" class="grid grid-cols-1 sm:grid-cols-3 gap-8">
+                <!-- 抽卡區域由 JS 動態生成 -->
+            </div>
+            <div class="text-center mt-8">
+                <button id="resetButton" class="btn hidden">
+                    祝您好運
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const cards = [
+            // 包含所有卡片資料的陣列
+            { name: "天使", message: "沉靜心靈，你將看見前行之路。", icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>`},
+            { name: "星光", message: "抬頭仰望，靈魂的光明會照耀你。", icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 0 1 1.04 0l2.123 5.176 5.518.442a.562.562 0 0 1 .325.961l-4.18 3.52 1.253 5.617a.562.562 0 0 1-.861.644l-4.98-2.883-4.98 2.882a.562.562 0 0 1-.86-.643l1.253-5.618-4.18-3.519a.562.562 0 0 1 .325-.961l5.518-.442 2.123-5.176Z" /></svg>`},
+            { name: "月亮", message: "你並不孤單，有人在心中想你。", icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0 1 18 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 0 0 3 10.5a9.753 9.753 0 0 0 18.752 4.502Z" /></svg>`},
+            { name: "獨角獸", message: "直覺指引，你將邁向美好轉變。", icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 10.5V6.75a4.5 4.5 0 1 1 9 0v3.75h-9a4.5 4.5 0 0 0-4.5 4.5v4.5m4.5-9h-9m0 0a4.5 4.5 0 0 0-4.5 4.5v4.5m18-9a4.5 4.5 0 0 0-4.5-4.5m4.5 4.5a4.5 4.5 0 0 0 4.5 4.5v4.5" /></svg>`},
+            { name: "彩虹", message: "所有困難將過去，前方道路更順利。", icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.25 7.756a4.5 4.5 0 0 0-4.508 4.508L6.25 19.5h11.5L14.25 7.756ZM5.25 13.5h13.5M9.75 3a.75.75 0 0 1 .75-.75h.75a.75.75 0 0 1 .75.75v1.5a.75.75 0 0 1-.75.75h-.75a.75.75 0 0 1-.75-.75V3ZM12 4.5v12.75M12 21a.75.75 0 0 1-.75-.75V19.5a.75.75 0 0 1 .75-.75h.75a.75.75 0 0 1 .75.75v.75a.75.75 0 0 1-.75.75h-.75Z" /></svg>`},
+            { name: "金魚", message: "財富或心靈成長，正逐漸靠近你。", icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6.25l-7.5 7.5L6 12l2.25-2.25" /></svg>`},
+            { name: "螞蟻", message: "堅定意志與努力，成功將伴隨而來。", icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18h3c1.1 0 2-.9 2-2s-.9-2-2-2h-3c-1.1 0-2 .9-2 2s.9 2 2 2Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M6 18v-4m6 4h3c1.1 0 2-.9 2-2s-.9-2-2-2h-3c-1.1 0-2 .9-2 2s.9 2 2 2Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-4m6 4h3c1.1 0 2-.9 2-2s-.9-2-2-2h-3c-1.1 0-2 .9-2 2s.9 2 2 2Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M18 18v-4" /></svg>`},
+            { name: "公牛", message: "挑戰來臨時，展現你的力量與勇氣。", icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 1 1 0-18 9 9 0 0 1 0 18Z" /></svg>`},
+            { name: "蝴蝶", message: "珍惜當下的蛻變，它將帶來新生。", icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 0 0 9-9c0-5.467-4.223-9.539-9-9.539h-.75c-4.777 0-9 4.072-9 9.539 0 3.733 2.152 6.942 5.257 8.528.232.115.485.172.748.172h.748ZM21 12h-9m-9 0h9" /></svg>`},
+            { name: "駱駝", message: "堅持不懈，你將穿越眼前的困境。", icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 1 1 0-18 9 9 0 0 1 0 18Z" /></svg>`},
+            { name: "烏龜", message: "進展雖緩慢，但你正在穩定前行。", icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 1 1 0-18 9 9 0 0 1 0 18Z" /></svg>`},
+            { name: "輪子", message: "別再猶豫，明確目標讓生活前進。", icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 1 1 0-18 9 9 0 0 1 0 18Z" /></svg>`},
+            { name: "玫瑰", message: "浪漫氣息環繞，你的愛情機遇將臨。", icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 1 1 0-18 9 9 0 0 1 0 18Z" /></svg>`},
+            { name: "握手", message: "新的連結展開，將對你產生深遠影響。", icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 1 1 0-18 9 9 0 0 1 0 18Z" /></svg>`},
+            { name: "人", message: "某人將進入你的人生，帶來改變。", icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 1 1 0-18 9 9 0 0 1 0 18Z" /></svg>`},
+            { name: "鼠群", message: "理解他人的處境，你會獲得更多信任。", icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 1 1 0-18 9 9 0 0 1 0 18Z" /></svg>`},
+            { name: "蜘蛛網", message: "人際關係脆弱，請謹慎維護連結。", icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 1 1 0-18 9 9 0 0 1 0 18Z" /></svg>`},
+            { name: "鸚鵡", message: "守住秘密，三思而後言才能保護自己。", icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 1 1 0-18 9 9 0 0 1 0 18Z" /></svg>`},
+            { name: "匕首", message: "潛藏危機環伺，保持警惕才能自保。", icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 1 1 0-18 9 9 0 0 1 0 18Z" /></svg>`},
+            { name: "門", message: "別被阻礙困住，新的機會正在等待。", icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 1 1 0-18 9 9 0 0 1 0 18Z" /></svg>`},
+            { name: "箭靶", message: "有人對你懷有目的，請多加小心。", icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 1 1 0-18 9 9 0 0 1 0 18Z" /></svg>`},
+            { name: "懸崖", message: "你正冒著風險，行動之前務必三思。", icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 1 1 0-18 9 9 0 0 1 0 18Z" /></svg>`},
+            { name: "陷阱", message: "貪婪會使你跌落，請守住本心。", icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 1 1 0-18 9 9 0 0 1 0 18Z" /></svg>`},
+            { name: "孔雀", message: "謙遜能保護你，別被虛假的奉承迷惑。", icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 1 1 0-18 9 9 0 0 1 0 18Z" /></svg>`},
+            { name: "花朵", message: "好運短暫綻放，把握眼前的機會。", icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 1 1 0-18 9 9 0 0 1 0 18Z" /></svg>`},
+            { name: "葡萄藤", message: "重要訊息將至，保持開放與接納。", icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 1 1 0-18 9 9 0 0 1 0 18Z" /></svg>`},
+            { name: "幸運草", message: "幸運正在靠近，只要細心便能發現。", icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 1 1 0-18 9 9 0 0 1 0 18Z" /></svg>`},
+            { name: "金幣", message: "審慎管理財務，你的資產將得以守護。", icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 1 1 0-18 9 9 0 0 1 0 18Z" /></svg>`},
+            { name: "寶盒", message: "努力終將回報，你將收穫實質成果。", icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 1 1 0-18 9 9 0 0 1 0 18Z" /></svg>`},
+            { name: "禮盒", message: "學會接受不完美，也能看見美好。", icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 1 1 0-18 9 9 0 0 1 0 18Z" /></svg>`},
+            { name: "鐵桶", message: "傾聽內心，尋找能填補靈魂的事物。", icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 1 1 0-18 9 9 0 0 1 0 18Z" /></svg>`},
+            { name: "酒瓶", message: "正視心中的不滿，它是改變的開始。", icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 1 1 0-18 9 9 0 0 1 0 18Z" /></svg>`},
+            { name: "魔鏡", message: "勇敢誠實面對自己，別再自欺欺人。", icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 1 1 0-18 9 9 0 0 1 0 18Z" /></svg>`},
+            { name: "眼睛", message: "直覺是力量，聽從內心能做正確選擇。", icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 1 1 0-18 9 9 0 0 1 0 18Z" /></svg>`},
+            { name: "天平", message: "檢視生活狀態，重新尋回平衡與安定。", icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 1 1 0-18 9 9 0 0 1 0 18Z" /></svg>`},
+            { name: "森林", message: "混亂之中停下腳步，冷靜再規劃方向。", icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 1 1 0-18 9 9 0 0 1 0 18Z" /></svg>`},
+            { name: "雷陣雨", message: "眼前問題短暫，很快光明將會到來。", icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 1 1 0-18 9 9 0 0 1 0 18Z" /></svg>`},
+            { name: "波紋", message: "一連串事件將至，改變你的日常生活。", icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 1 1 0-18 9 9 0 0 1 0 18Z" /></svg>`},
+            { name: "雨傘", message: "大方接受善意，你將得到溫柔守護。", icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 1 1 0-18 9 9 0 0 1 0 18Z" /></svg>`},
+            { name: "旅人", message: "暫時放慢腳步，讓身心獲得休息。", icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 1 1 0-18 9 9 0 0 1 0 18Z" /></svg>`},
+            { name: "剪刀", message: "放下失望，這將是你重新出發的開始。", icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 1 1 0-18 9 9 0 0 1 0 18Z" /></svg>`},
+            { name: "羽毛", message: "仔細觀察周遭，辨別誰是真誠可靠。", icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 1 1 0-18 9 9 0 0 1 0 18Z" /></svg>`},
+            { name: "鯨魚", message: "恐懼只是幻象，別被自己困住。", icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 1 1 0-18 9 9 0 0 1 0 18Z" /></svg>`},
+            { name: "貓", message: "溫和背後或藏雙面，觀察才能洞悉。", icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 1 1 0-18 9 9 0 0 1 0 18Z" /></svg>`},
+            { name: "蚱蜢", message: "需要幫助時，勇敢向他人伸出請求。", icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 1 1 0-18 9 9 0 0 1 0 18Z" /></svg>`},
+            { name: "狐狸", message: "聰明在於隱忍，等待時機再行動。", icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 1 1 0-18 9 9 0 0 1 0 18Z" /></svg>`},
+            { name: "狗", message: "忠誠與陪伴就在你身邊，不必孤單。", icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 1 1 0-18 9 9 0 0 1 0 18Z" /></svg>`},
+            { name: "貓頭鷹", message: "黑暗中仍能洞察真相，保持清醒。", icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 1 1 0-18 9 9 0 0 1 0 18Z" /></svg>`},
+            { name: "太陽", message: "新的開始到來，勇敢擁抱每個清晨。", icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 1 1 0-18 9 9 0 0 1 0 18Z" /></svg>`},
+            { name: "流星", message: "轉瞬的啟示降臨，別錯過良機。", icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 1 1 0-18 9 9 0 0 1 0 18Z" /></svg>`},
+            { name: "燭火", message: "希望雖脆弱，但依然照亮你心。", icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 1 1 0-18 9 9 0 0 1 0 18Z" /></svg>`},
+            { name: "貝殼", message: "隱藏的真相或珍寶，將被你發現。", icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 1 1 0-18 9 9 0 0 1 0 18Z" /></svg>`},
+            { name: "小草", message: "縱使環境艱難，仍能展現生命力。", icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 1 1 0-18 9 9 0 0 1 0 18Z" /></svg>`},
+            { name: "橋樑", message: "新的連結將出現，幫助你跨越困境。", icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 1 1 0-18 9 9 0 0 1 0 18Z" /></svg>`}
+        ];
+
+        const introSection = document.getElementById('intro-section');
+        const drawSection = document.getElementById('draw-section');
+        const drawButton = document.getElementById('drawButton');
+        const resetButton = document.getElementById('resetButton');
+        const cardSelectionContainer = document.getElementById('card-selection');
+        
+        let revealedCardCount = 0;
+
+        // 隨機從牌組中選擇3張不重複的卡片
+        function selectRandomCards() {
+            const shuffled = [...cards].sort(() => 0.5 - Math.random());
+            return shuffled.slice(0, 3);
+        }
+
+        // 創建卡片 HTML 元素
+        function createCardElement(card) {
+            const cardContainer = document.createElement('div');
+            cardContainer.className = 'card-container';
+            cardContainer.dataset.cardName = card.name;
+
+            const cardInner = document.createElement('div');
+            cardInner.className = 'card-inner';
+
+            // 卡牌背面
+            const cardBack = document.createElement('div');
+            cardBack.className = 'card-back';
+            cardBack.innerHTML = `
+                <div class="text-white text-5xl font-bold">?</div>
+            `;
+
+            // 卡牌正面 - 顯示結果
+            const cardFront = document.createElement('div');
+            cardFront.className = 'card-front';
+            cardFront.innerHTML = `
+                <div class="flex flex-col items-center">
+                    <div class="text-3xl font-bold text-gray-800 mb-2">${card.icon}</div>
+                    <h3 class="text-xl font-bold text-gray-800 mb-2" style="font-family: 'Noto Serif TC', serif;">${card.name}</h3>
+                    <p class="text-gray-600 text-sm md:text-base text-center">${card.message}</p>
+                </div>
+            `;
+            
+            // 點擊事件，翻轉卡片
+            cardContainer.addEventListener('click', () => {
+                if (cardContainer.classList.contains('revealed')) {
+                    return; // 如果卡片已經翻開，則不執行
+                }
+
+                cardContainer.classList.add('revealed');
+                revealedCardCount++;
+
+                // 當三張牌都翻開時，顯示「祝您好運」按鈕
+                if (revealedCardCount === 3) {
+                    resetButton.classList.remove('hidden');
+                }
+            });
+
+            cardInner.appendChild(cardBack);
+            cardInner.appendChild(cardFront);
+            cardContainer.appendChild(cardInner);
+
+            return cardContainer;
+        }
+
+        // 處理抽卡
+        drawButton.addEventListener('click', () => {
+            introSection.classList.add('hidden');
+            drawSection.classList.remove('hidden');
+            
+            cardSelectionContainer.innerHTML = '';
+            revealedCardCount = 0;
+            resetButton.classList.add('hidden');
+
+            const drawnCards = selectRandomCards();
+
+            drawnCards.forEach((card) => {
+                const cardElement = createCardElement(card);
+                cardSelectionContainer.appendChild(cardElement);
+            });
+        });
+
+        // 處理祝您好運
+        resetButton.addEventListener('click', () => {
+            drawSection.classList.add('hidden');
+            introSection.classList.remove('hidden');
+        });
+    </script>
+</body>
+</html>
