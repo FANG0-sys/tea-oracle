@@ -13,13 +13,20 @@
             font-family: 'Inter', sans-serif;
             letter-spacing: 0.5px;
             background-color: #f7f3f1;
-            height: 100%;
+            /* 將 min-h-screen 移到 body 上，讓整個頁面都有足夠高度 */
+            min-height: 100vh;
+            overflow-x: hidden;
         }
 
-        /* 主容器樣式 */
+        /* 主容器樣式 - 調整為更靈活的版面 */
         .main-container {
             background-color: #FFFFFF;
             border: 4px solid #f0e9e6;
+            min-height: 80vh; 
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            flex-grow: 1; /* 讓容器可以伸展以適應內容 */
         }
 
         /* 卡片容器樣式 */
@@ -117,7 +124,7 @@
         }
     </style>
 </head>
-<body class="text-gray-800 flex flex-col items-center justify-center min-h-screen p-6 overflow-hidden relative">
+<body class="text-gray-800 flex flex-col items-center justify-start min-h-screen p-6 overflow-x-hidden relative">
 
     <!-- 幾何圖形背景 -->
     <div id="geometric-shapes" class="absolute inset-0 z-0">
@@ -216,6 +223,7 @@
         const drawButton = document.getElementById('drawButton');
         const resetButton = document.getElementById('resetButton');
         const cardSelectionContainer = document.getElementById('card-selection');
+        const mainContent = document.getElementById('main-content');
         
         let revealedCardCount = 0;
 
@@ -289,12 +297,16 @@
                 const cardElement = createCardElement(card);
                 cardSelectionContainer.appendChild(cardElement);
             });
+
+            // 調整主容器高度以適應內容
+            mainContent.style.minHeight = '100vh';
         });
 
         // 處理重新占卜
         resetButton.addEventListener('click', () => {
             drawSection.classList.add('hidden');
             introSection.classList.remove('hidden');
+            mainContent.style.minHeight = '80vh';
         });
     </script>
 </body>
